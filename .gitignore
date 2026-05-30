@@ -28,5 +28,7 @@ replay_pid*
 build/
 .idea/
 .gradle/
-!build/libs/
 .DS_STORE
+
+!build/libs/
+!build/reports/jacoco/
