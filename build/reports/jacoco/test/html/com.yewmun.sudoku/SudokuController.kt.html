@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SudokuController.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">kotlin-sudoku-cli</a> &gt; <a href="index.source.html" class="el_package">com.yewmun.sudoku</a> &gt; <span class="el_source">SudokuController.kt</span></div><h1>SudokuController.kt</h1><pre class="source lang-java linenums">package com.yewmun.sudoku
+
+import kotlin.math.sqrt
+import kotlin.random.Random
+
+<span class="fc" id="L6">class SudokuController(</span>
+<span class="pc" id="L7">    private val size: Int = 9,</span>
+<span class="fc" id="L8">    private val commandControl: CommandControl = CommandControl()</span>
+<span class="fc" id="L9">) {</span>
+
+    fun generate(cellsToRemove: Int): BoardData {
+<span class="fc bfc" id="L12" title="All 4 branches covered.">        val values = Array(size) { IntArray(size) { 0 } }</span>
+<span class="fc bfc" id="L13" title="All 4 branches covered.">        val fixed = Array(size) { BooleanArray(size) { true } }</span>
+<span class="fc" id="L14">        val answers = mutableMapOf&lt;Pair&lt;Int, Int&gt;, Int&gt;()</span>
+<span class="fc" id="L15">        val sqrtSize = sqrt(size.toDouble()).toInt()</span>
+
+<span class="fc" id="L17">        fillDiagonal(sqrtSize, values)</span>
+<span class="fc" id="L18">        fillRemaining(0, sqrtSize, sqrtSize, values)</span>
+<span class="fc" id="L19">        removeKDigits(cellsToRemove, values, fixed, answers)</span>
+
+<span class="fc" id="L21">        return BoardData(values, fixed, answers)</span>
+    }
+
+    fun draw(board: BoardData) {
+<span class="fc" id="L25">        println(&quot;    1 2 3   4 5 6   7 8 9&quot;)</span>
+<span class="fc" id="L26">        println(&quot;  +-------+-------+-------+&quot;)</span>
+<span class="fc" id="L27">        var isGreen = false</span>
+
+<span class="fc bfc" id="L29" title="All 2 branches covered.">        for (row in 0 until 9) {</span>
+<span class="fc" id="L30">            print(&quot;${ROW_LABELS[row]} | &quot;)</span>
+
+<span class="fc bfc" id="L32" title="All 2 branches covered.">            for (col in 0 until 9) {</span>
+<span class="fc" id="L33">                val value = board.values[row][col].let {</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">                    if (it == 0) &quot;.&quot; else it</span>
+                }
+<span class="fc bfc" id="L36" title="All 2 branches covered.">                val displayValue = if (board.fixedValues[row][col]) {</span>
+<span class="fc bfc" id="L37" title="All 2 branches covered.">                    if (isGreen) {</span>
+<span class="fc" id="L38">                        isGreen = false</span>
+<span class="fc" id="L39">                        &quot;$RESET_TEXT$value&quot;</span>
+                    } else {
+<span class="fc" id="L41">                        value.toString()</span>
+                    }
+                } else {
+<span class="fc bfc" id="L44" title="All 2 branches covered.">                    if (isGreen) {</span>
+<span class="fc" id="L45">                        value.toString()</span>
+                    } else {
+<span class="fc" id="L47">                        isGreen = true</span>
+<span class="fc" id="L48">                        &quot;$GREEN_TEXT$value&quot;</span>
+                    }
+                }
+<span class="fc" id="L51">                print(&quot;$displayValue &quot;)</span>
+
+<span class="fc bfc" id="L53" title="All 2 branches covered.">                if ((col + 1) % 3 == 0) {</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">                    if (isGreen) {</span>
+<span class="fc" id="L55">                        isGreen = false</span>
+<span class="fc" id="L56">                        print(&quot;$RESET_TEXT| &quot;)</span>
+                    } else {
+<span class="fc" id="L58">                        print(&quot;| &quot;)</span>
+                    }
+                }
+            }
+
+<span class="fc" id="L63">            println()</span>
+
+<span class="fc bfc" id="L65" title="All 2 branches covered.">            if ((row + 1) % 3 == 0) {</span>
+<span class="fc" id="L66">                println(&quot;  +-------+-------+-------+&quot;)</span>
+            }
+        }
+<span class="fc" id="L69">    }</span>
+
+<span class="fc" id="L71">    fun isComplete(board: BoardData) = board.values.all {</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        it.none { value -&gt; value == 0 }</span>
+<span class="fc" id="L73">    }</span>
+
+    fun handleCommand(
+        input: String,
+        board: BoardData
+    ) {
+<span class="fc" id="L79">        val parts = input.uppercase().split(Regex(&quot;\\s+&quot;))</span>
+
+<span class="pc bpc" id="L81" title="1 of 2 branches missed.">        parts.firstOrNull()?.let {</span>
+<span class="fc" id="L82">            val s = commandControl.execute(parts, board)</span>
+<span class="fc" id="L83">            s</span>
+<span class="fc bfc" id="L84" title="All 2 branches covered.">        }?.let {</span>
+<span class="fc" id="L85">            println(it)</span>
+<span class="fc" id="L86">            it</span>
+<span class="fc" id="L87">        }?: println(&quot;Invalid command. Try: set row col value, clear row col, hint, check or quit.&quot;)</span>
+<span class="fc" id="L88">    }</span>
+
+    private fun fillDiagonal(sqrtSize: Int, values: Array&lt;IntArray&gt;) {
+<span class="pc bpc" id="L91" title="6 of 10 branches missed.">        for (i in 0 until size step sqrtSize) {</span>
+<span class="fc" id="L92">            fillBox(i, i, sqrtSize, values)</span>
+        }
+<span class="fc" id="L94">    }</span>
+
+    private fun fillBox(row: Int, col: Int, sqrtSize: Int, values: Array&lt;IntArray&gt;) {
+<span class="fc" id="L97">        var num: Int</span>
+<span class="fc bfc" id="L98" title="All 2 branches covered.">        for (i in 0 until sqrtSize) {</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">            for (j in 0 until sqrtSize) {</span>
+                do {
+<span class="fc" id="L101">                    num = Random.nextInt(1, size + 1)</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">                } while (!isSafeInBox(row, col, num, sqrtSize, values))</span>
+<span class="fc" id="L103">                values[row + i][col + j] = num</span>
+            }
+        }
+<span class="fc" id="L106">    }</span>
+
+    private fun isSafeInBox(rowStart: Int, colStart: Int, num: Int, sqrtSize: Int, values: Array&lt;IntArray&gt;): Boolean {
+<span class="fc bfc" id="L109" title="All 2 branches covered.">        for (i in 0 until sqrtSize) {</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">            for (j in 0 until sqrtSize) {</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">                if (values[rowStart + i][colStart + j] == num) return false</span>
+            }
+        }
+<span class="fc" id="L114">        return true</span>
+    }
+
+    private fun isSafe(i: Int, j: Int, num: Int, sqrtSize: Int, values: Array&lt;IntArray&gt;): Boolean {
+<span class="fc bfc" id="L118" title="All 4 branches covered.">        return values[i].none { it == num } &amp;&amp; // Row check</span>
+<span class="fc bfc" id="L119" title="All 4 branches covered.">                (0 until size).none { values[it][j] == num } &amp;&amp; // Column check</span>
+<span class="fc bfc" id="L120" title="All 2 branches covered.">                isSafeInBox(i - i % sqrtSize, j - j % sqrtSize, num, sqrtSize, values) // Box check</span>
+    }
+
+    private fun fillRemaining(i: Int, j: Int, sqrtSize: Int, values: Array&lt;IntArray&gt;): Boolean {
+<span class="fc" id="L124">        var row = i</span>
+<span class="fc" id="L125">        var col = j</span>
+<span class="pc bpc" id="L126" title="1 of 4 branches missed.">        if (col &gt;= size &amp;&amp; row &lt; size - 1) {</span>
+<span class="fc" id="L127">            row += 1</span>
+<span class="fc" id="L128">            col = 0</span>
+        }
+<span class="pc bpc" id="L130" title="3 of 4 branches missed.">        if (row &gt;= size &amp;&amp; col &gt;= size) return true</span>
+<span class="fc bfc" id="L131" title="All 4 branches covered.">        if (row &lt; sqrtSize &amp;&amp; col &lt; sqrtSize) col = sqrtSize</span>
+<span class="fc bfc" id="L132" title="All 4 branches covered.">        else if (row &lt; size - sqrtSize &amp;&amp; col == (row / sqrtSize) * sqrtSize) col += sqrtSize</span>
+<span class="fc bfc" id="L133" title="All 4 branches covered.">        else if (row &gt;= size - sqrtSize &amp;&amp; col == size - sqrtSize) {</span>
+<span class="fc" id="L134">            row += 1</span>
+<span class="fc" id="L135">            col = 0</span>
+<span class="fc bfc" id="L136" title="All 2 branches covered.">            if (row &gt;= size) return true</span>
+        }
+
+<span class="pc bpc" id="L139" title="1 of 4 branches missed.">        for (num in 1..size) {</span>
+<span class="fc bfc" id="L140" title="All 2 branches covered.">            if (isSafe(row, col, num, sqrtSize, values)) {</span>
+<span class="fc" id="L141">                values[row][col] = num</span>
+<span class="fc bfc" id="L142" title="All 2 branches covered.">                if (fillRemaining(row, col + 1, sqrtSize, values)) return true</span>
+<span class="fc" id="L143">                values[row][col] = 0</span>
+            }
+        }
+<span class="fc" id="L146">        return false</span>
+    }
+
+    private fun removeKDigits(k: Int, values: Array&lt;IntArray&gt;, fixed: Array&lt;BooleanArray&gt;, answers: MutableMap&lt;Pair&lt;Int, Int&gt;, Int&gt;) {
+<span class="fc" id="L150">        var count = k</span>
+<span class="fc bfc" id="L151" title="All 2 branches covered.">        while (count != 0) {</span>
+<span class="fc" id="L152">            val cellId = Random.nextInt(0, size * size)</span>
+<span class="fc" id="L153">            val i = cellId / size</span>
+<span class="fc" id="L154">            val j = cellId % size</span>
+<span class="fc bfc" id="L155" title="All 2 branches covered.">            if (values[i][j] != 0) {</span>
+<span class="fc" id="L156">                answers[Pair(i, j)] = values[i][j]</span>
+<span class="fc" id="L157">                values[i][j] = 0</span>
+<span class="fc" id="L158">                fixed[i][j] = false</span>
+<span class="fc" id="L159">                count--</span>
+            }
+        }
+<span class="fc" id="L162">    }</span>
+
+    companion object {
+        private const val GREEN_TEXT = &quot;\u001B[32m&quot;
+        private const val RESET_TEXT = &quot;\u001B[0m&quot;
+
+        @JvmStatic
+        fun makeBoard(): BoardData {
+<span class="fc" id="L170">            val puzzle = arrayOf(</span>
+<span class="fc" id="L171">                intArrayOf(5, 3, 0, 0, 7, 0, 0, 0, 0),</span>
+<span class="fc" id="L172">                intArrayOf(6, 0, 0, 1, 9, 5, 0, 0, 0),</span>
+<span class="fc" id="L173">                intArrayOf(0, 9, 8, 0, 0, 0, 0, 6, 0),</span>
+<span class="fc" id="L174">                intArrayOf(8, 0, 0, 0, 6, 0, 0, 0, 3),</span>
+<span class="fc" id="L175">                intArrayOf(4, 0, 0, 8, 0, 3, 0, 0, 1),</span>
+<span class="fc" id="L176">                intArrayOf(7, 0, 0, 0, 2, 0, 0, 0, 6),</span>
+<span class="fc" id="L177">                intArrayOf(0, 6, 0, 0, 0, 0, 2, 8, 0),</span>
+<span class="fc" id="L178">                intArrayOf(0, 0, 0, 4, 1, 9, 0, 0, 5),</span>
+<span class="fc" id="L179">                intArrayOf(0, 0, 0, 0, 8, 0, 0, 7, 9)</span>
+            )
+
+<span class="fc bfc" id="L182" title="All 2 branches covered.">            val fixedValues = Array(9) { row -&gt;</span>
+<span class="fc bfc" id="L183" title="All 4 branches covered.">                BooleanArray(9) { col -&gt; puzzle[row][col] != 0 }</span>
+            }
+
+<span class="fc" id="L186">            val answers = mapOf(</span>
+<span class="fc" id="L187">                Pair(0, 2) to 4,Pair(0, 3) to 6,Pair(0, 5) to 8,Pair(0, 6) to 9,Pair(0, 7) to 1,Pair(0, 8) to 2,</span>
+<span class="fc" id="L188">                Pair(1, 1) to 7,Pair(1, 2) to 2,Pair(1, 6) to 3,Pair(1, 7) to 4,Pair(1, 8) to 8,</span>
+<span class="fc" id="L189">                Pair(2, 0) to 1,Pair(2, 3) to 3,Pair(2, 4) to 4,Pair(2, 5) to 2,Pair(2, 6) to 5,Pair(2, 8) to 7,</span>
+<span class="fc" id="L190">                Pair(3, 1) to 5,Pair(3, 2) to 9,Pair(3, 3) to 7,Pair(3, 5) to 1,Pair(3, 6) to 4,Pair(3, 7) to 2,</span>
+<span class="fc" id="L191">                Pair(4, 1) to 2,Pair(4, 2) to 6,Pair(4, 4) to 5,Pair(4, 6) to 7,Pair(4, 7) to 9,</span>
+<span class="fc" id="L192">                Pair(5, 1) to 1,Pair(5, 2) to 3,Pair(5, 3) to 9,Pair(5, 5) to 4,Pair(5, 6) to 8,Pair(5, 7) to 5,</span>
+<span class="fc" id="L193">                Pair(6, 0) to 9,Pair(6, 2) to 1,Pair(6, 3) to 5,Pair(6, 4) to 3,Pair(6, 5) to 7,Pair(6, 8) to 4,</span>
+<span class="fc" id="L194">                Pair(7, 0) to 2,Pair(7, 1) to 8,Pair(7, 2) to 7,Pair(7, 6) to 6,Pair(7, 7) to 3,</span>
+<span class="fc" id="L195">                Pair(8, 0) to 3,Pair(8, 1) to 4,Pair(8, 2) to 5,Pair(8, 3) to 2,Pair(8, 5) to 6,Pair(8, 6) to 1</span>
+            )
+<span class="fc" id="L197">            return BoardData(puzzle, fixedValues, answers)</span>
+<span class="fc" id="L198">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SetCommandExecutor.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">kotlin-sudoku-cli</a> &gt; <a href="index.source.html" class="el_package">com.yewmun.sudoku.command</a> &gt; <span class="el_source">SetCommandExecutor.kt</span></div><h1>SetCommandExecutor.kt</h1><pre class="source lang-java linenums">package com.yewmun.sudoku.command
+
+import com.yewmun.sudoku.BoardData
+import com.yewmun.sudoku.CommandExecutor
+import com.yewmun.sudoku.ROW_LABELS
+
+<span class="fc" id="L7">open class SetCommandExecutor: CommandExecutor {</span>
+    override fun execute(
+        parts: List&lt;String&gt;,
+        board: BoardData
+    ): String? {
+<span class="fc bfc" id="L12" title="All 2 branches covered.">        val move = parseMove(parts) ?: return null</span>
+
+<span class="fc" id="L14">        val previousValue = board.values[move.row][move.col]</span>
+<span class="fc" id="L15">        board.values[move.row][move.col] = 0</span>
+<span class="fc" id="L16">        val isValid = when {</span>
+<span class="fc bfc" id="L17" title="All 2 branches covered.">            !isValidMove(move.row, move.col, board) -&gt; {</span>
+<span class="fc" id="L18">                println(&quot;Invalid move. That cell is a fixed value.&quot;)</span>
+<span class="fc" id="L19">                false</span>
+            }
+<span class="fc bfc" id="L21" title="All 2 branches covered.">            !isValidInRow(move.row, move.value, board) -&gt; {</span>
+<span class="fc" id="L22">                println(&quot;Invalid move. That value already exists in the row.&quot;)</span>
+<span class="fc" id="L23">                false</span>
+            }
+<span class="fc bfc" id="L25" title="All 2 branches covered.">            !isValidInColumn(move.col, move.value, board) -&gt; {</span>
+<span class="fc" id="L26">                println(&quot;Invalid move. That value already exists in the column.&quot;)</span>
+<span class="fc" id="L27">                false</span>
+            }
+<span class="fc bfc" id="L29" title="All 2 branches covered.">            !isValidInBox(move.row, move.col, move.value, board) -&gt; {</span>
+<span class="fc" id="L30">                println(&quot;Invalid move. That value already exists in the 3x3 box.&quot;)</span>
+<span class="fc" id="L31">                false</span>
+            }
+            else -&gt; {
+<span class="fc" id="L34">                true</span>
+            }
+        }
+<span class="fc bfc" id="L37" title="All 2 branches covered.">        if (!isValid) {</span>
+<span class="fc" id="L38">            board.values[move.row][move.col] = previousValue</span>
+<span class="fc" id="L39">            return null</span>
+        }
+
+<span class="fc" id="L42">        board.values[move.row][move.col] = move.value</span>
+<span class="fc" id="L43">        return &quot;Move accepted.&quot;</span>
+    }
+
+    private fun parseMove(parts: List&lt;String&gt;): MoveData? {
+<span class="fc bfc" id="L47" title="All 2 branches covered.">        if (parts.size != 4) {</span>
+<span class="fc" id="L48">            println(&quot;Invalid command. Usage: set row col value&quot;)</span>
+<span class="fc" id="L49">            return null</span>
+        }
+
+<span class="fc" id="L52">        val row = parts[1]</span>
+<span class="fc" id="L53">        val col = parts[2].toIntOrNull()</span>
+<span class="fc" id="L54">        val value = parts[3].toIntOrNull()</span>
+
+<span class="pc bpc" id="L56" title="1 of 6 branches missed.">        if (row.length != 1 || col == null || value == null) {</span>
+<span class="fc" id="L57">            println(&quot;Row must be alphabet, column and value must be numbers.&quot;)</span>
+<span class="fc" id="L58">            return null</span>
+        }
+
+<span class="pc bpc" id="L61" title="2 of 6 branches missed.">        if (ROW_LABELS.indexOf(row) &lt; 0 || col !in 1..9 || value !in 1..9) {</span>
+<span class="fc" id="L62">            println(&quot;Row must be A-J skip I, column and value must be numbers from 1 to 9.&quot;)</span>
+<span class="fc" id="L63">            return null</span>
+        }
+
+<span class="fc" id="L66">        return MoveData(</span>
+<span class="fc" id="L67">            row = ROW_LABELS.indexOf(row),</span>
+<span class="fc" id="L68">            col = col - 1,</span>
+<span class="fc" id="L69">            value = value</span>
+        )
+    }
+
+    private fun isValidMove(
+        row: Int,
+        col: Int,
+        board: BoardData
+    ): Boolean {
+<span class="fc bfc" id="L78" title="All 2 branches covered.">        return !board.fixedValues[row][col]</span>
+    }
+
+    private fun isValidInRow(
+        row: Int,
+        value: Int,
+        board: BoardData
+<span class="fc bfc" id="L85" title="All 2 branches covered.">    ) = board.values[row].none { it == value }</span>
+
+    private fun isValidInColumn(
+        col: Int,
+        value: Int,
+        board: BoardData
+<span class="fc bfc" id="L91" title="All 2 branches covered.">    ) = board.values.none { it[col] == value }</span>
+
+    private fun isValidInBox(
+        row: Int,
+        col: Int,
+        value: Int,
+        board: BoardData
+    ): Boolean {
+<span class="fc" id="L99">        val boxStartRow = row / 3 * 3</span>
+<span class="fc" id="L100">        val boxStartCol = col / 3 * 3</span>
+
+<span class="fc bfc" id="L102" title="All 2 branches covered.">        for (r in boxStartRow until boxStartRow + 3) {</span>
+<span class="fc bfc" id="L103" title="All 2 branches covered.">            for (c in boxStartCol until boxStartCol + 3) {</span>
+<span class="fc bfc" id="L104" title="All 2 branches covered.">                if (board.values[r][c] == value) {</span>
+<span class="fc" id="L105">                    return false</span>
+                }
+            }
+        }
+
+<span class="fc" id="L110">        return true</span>
+    }
+
+<span class="fc" id="L113">    override fun getCommand() = &quot;set&quot;</span>
+}
+
+data class MoveData (
+    val row: Int,
+    val col: Int,
+    val value: Int
+)
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

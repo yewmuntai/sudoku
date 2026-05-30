@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClearCommandExecutor.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">kotlin-sudoku-cli</a> &gt; <a href="index.source.html" class="el_package">com.yewmun.sudoku.command</a> &gt; <span class="el_source">ClearCommandExecutor.kt</span></div><h1>ClearCommandExecutor.kt</h1><pre class="source lang-java linenums">package com.yewmun.sudoku.command
+
+import com.yewmun.sudoku.BoardData
+import com.yewmun.sudoku.CommandExecutor
+import com.yewmun.sudoku.ROW_LABELS
+
+<span class="fc" id="L7">open class ClearCommandExecutor: CommandExecutor {</span>
+    override fun execute (
+        parts: List&lt;String&gt;,
+        board: BoardData
+    ): String? {
+<span class="fc bfc" id="L12" title="All 2 branches covered.">        val clear = parseClear(parts) ?: return null</span>
+
+<span class="fc" id="L14">        val rowIndex = clear.row</span>
+<span class="fc" id="L15">        val colIndex = clear.col</span>
+
+<span class="fc bfc" id="L17" title="All 2 branches covered.">        if (board.fixedValues[rowIndex][colIndex]) {</span>
+<span class="fc" id="L18">            println(&quot;You cannot clear a fixed puzzle cell.&quot;)</span>
+<span class="fc" id="L19">            return null</span>
+        }
+
+<span class="fc" id="L22">        board.values[rowIndex][colIndex] = 0</span>
+<span class="fc" id="L23">        return &quot;Cell ${parts[1]} ${parts[2]} cleared.&quot;</span>
+    }
+
+    private fun parseClear(parts: List&lt;String&gt;): ClearData? {
+<span class="fc bfc" id="L27" title="All 2 branches covered.">        if (parts.size != 3) {</span>
+<span class="fc" id="L28">            println(&quot;Invalid command. Usage: clear row col&quot;)</span>
+<span class="fc" id="L29">            return null</span>
+        }
+
+<span class="fc" id="L32">        val row = parts[1]</span>
+<span class="fc" id="L33">        val col = parts[2].toIntOrNull()</span>
+
+<span class="pc bpc" id="L35" title="1 of 4 branches missed.">        if (row.length != 1 || col == null) {</span>
+<span class="fc" id="L36">            println(&quot;Row must be alphabet, column must be numbers.&quot;)</span>
+<span class="fc" id="L37">            return null</span>
+        }
+
+<span class="pc bpc" id="L40" title="1 of 4 branches missed.">        if (ROW_LABELS.indexOf(row) &lt; 0 || col !in 1..9) {</span>
+<span class="fc" id="L41">            println(&quot;Row must be A-J skip I, column must be numbers from 1 to 9.&quot;)</span>
+<span class="fc" id="L42">            return null</span>
+        }
+
+<span class="fc" id="L45">        return ClearData(</span>
+<span class="fc" id="L46">            row = ROW_LABELS.indexOf(row),</span>
+<span class="fc" id="L47">            col = col - 1</span>
+        )
+    }
+
+<span class="fc" id="L51">    override fun getCommand() = &quot;clear&quot;</span>
+}
+
+data class ClearData (
+    val row: Int,
+    val col: Int,
+)
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

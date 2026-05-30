@@ -25,10 +25,13 @@ replay_pid*
 
 # Kotlin Gradle plugin data, see https://kotlinlang.org/docs/whatsnew20.html#new-directory-for-kotlin-data-in-gradle-projects
 .kotlin/
-build/
 .idea/
 .gradle/
 .DS_STORE
 
+build/*
 !build/libs/
+!build/libs/kotlin-sudoku-cli-1.0.0.jar
+!build/reports/
+build/reports/*
 !build/reports/jacoco/
