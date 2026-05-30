@@ -16,5 +16,7 @@ The Command classes are used to execute the commands. This makes it easy to add 
 
 To run tests and code coverage run   
 **./gradlew test**
-There is 1 integration test and some unit tests. To see code coverage report, open *build/reports/jacoco/test/html/index.html*.
+There is 1 integration test and some unit tests.
+
+To see code coverage report, open **build/reports/jacoco/test/html/index.html** in browser.
 The most recent report is added to this repository for convenience.
