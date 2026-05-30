@@ -1,13 +1,13 @@
 package com.yewmun.sudoku.command
 
-import com.yewmun.sudoku.Board
-import com.yewmun.sudoku.Board.Companion.ROW_LABELS
-import com.yewmun.sudoku.Command
+import com.yewmun.sudoku.BoardData
+import com.yewmun.sudoku.CommandExecutor
+import com.yewmun.sudoku.ROW_LABELS
 
-class ClearCommand: Command {
+open class ClearCommandExecutor: CommandExecutor {
     override fun execute (
         parts: List<String>,
-        board: Board
+        board: BoardData
     ): String? {
         val clear = parseClear(parts) ?: return null
 
@@ -23,7 +23,7 @@ class ClearCommand: Command {
         return "Cell ${parts[1]} ${parts[2]} cleared."
     }
 
-    private fun parseClear(parts: List<String>): Clear? {
+    private fun parseClear(parts: List<String>): ClearData? {
         if (parts.size != 3) {
             println("Invalid command. Usage: clear row col")
             return null
@@ -42,14 +42,16 @@ class ClearCommand: Command {
             return null
         }
 
-        return Clear(
+        return ClearData(
             row = ROW_LABELS.indexOf(row),
             col = col - 1
         )
     }
+
+    override fun getCommand() = "clear"
 }
 
-data class Clear(
+data class ClearData (
     val row: Int,
     val col: Int,
 )

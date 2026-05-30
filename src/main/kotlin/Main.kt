@@ -1,13 +1,27 @@
-import com.yewmun.sudoku.Board
-import com.yewmun.sudoku.SudokuGenerator
+import com.yewmun.sudoku.ExitException
+import com.yewmun.sudoku.SudokuController
+
 fun main(args: Array<String>) {
+    var removeCellIdx = 0
+    val isTest = if (args.size > 0 && args[0] == "test") {
+        removeCellIdx++
+        true
+    } else {
+        false
+    }
+
     val removeCells = try {
-        args[0].toInt()
+        args[removeCellIdx].toInt()
     } catch (e: Exception) {
         20
     }
-    val board = SudokuGenerator(9).generate(removeCells)
-    //val board = Board.generate() // hard coded board
+    val controller = SudokuController(9)
+
+    val board = if (isTest) {
+        SudokuController.makeBoard()
+    } else {
+        controller.generate(removeCells)
+    }
 
     println("Welcome to Kotlin Sudoku!")
     println("Commands:")
@@ -19,9 +33,9 @@ fun main(args: Array<String>) {
     println()
 
     while (true) {
-        board.draw()
+        controller.draw(board)
 
-        if (board.isComplete()) {
+        if (controller.isComplete(board)) {
             println("Congratulations! You completed the board.")
             break
         }
@@ -29,12 +43,15 @@ fun main(args: Array<String>) {
         print("Enter command: ")
         val input = readlnOrNull()?.trim() ?: break
 
-        if (input.equals("quit", ignoreCase = true)) {
+        try {
+            controller.handleCommand(input, board)
+        }catch (exit: ExitException) {
             println("Goodbye!")
             break
+        }catch (e: Exception) {
+            println("Error has occurred. Try again.")
+            // log exception
         }
-
-        board.handleCommand(input)
         println()
     }
 }

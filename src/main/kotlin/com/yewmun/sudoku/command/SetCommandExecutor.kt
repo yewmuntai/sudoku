@@ -1,19 +1,15 @@
 package com.yewmun.sudoku.command
 
-import com.yewmun.sudoku.Board
-import com.yewmun.sudoku.Command
+import com.yewmun.sudoku.BoardData
+import com.yewmun.sudoku.CommandExecutor
+import com.yewmun.sudoku.ROW_LABELS
 
-class SetCommand: Command {
+open class SetCommandExecutor: CommandExecutor {
     override fun execute(
         parts: List<String>,
-        board: Board
+        board: BoardData
     ): String? {
         val move = parseMove(parts) ?: return null
-
-        if (board.fixedValues[move.row][move.col]) {
-            println("You cannot change a fixed puzzle cell.")
-            return null
-        }
 
         val previousValue = board.values[move.row][move.col]
         board.values[move.row][move.col] = 0
@@ -47,7 +43,7 @@ class SetCommand: Command {
         return "Move accepted."
     }
 
-    private fun parseMove(parts: List<String>): Move? {
+    private fun parseMove(parts: List<String>): MoveData? {
         if (parts.size != 4) {
             println("Invalid command. Usage: set row col value")
             return null
@@ -62,13 +58,13 @@ class SetCommand: Command {
             return null
         }
 
-        if (Board.ROW_LABELS.indexOf(row) < 0 || col !in 1..9 || value !in 1..9) {
+        if (ROW_LABELS.indexOf(row) < 0 || col !in 1..9 || value !in 1..9) {
             println("Row must be A-J skip I, column and value must be numbers from 1 to 9.")
             return null
         }
 
-        return Move(
-            row = Board.ROW_LABELS.indexOf(row),
+        return MoveData(
+            row = ROW_LABELS.indexOf(row),
             col = col - 1,
             value = value
         )
@@ -77,7 +73,7 @@ class SetCommand: Command {
     private fun isValidMove(
         row: Int,
         col: Int,
-        board: Board
+        board: BoardData
     ): Boolean {
         return !board.fixedValues[row][col]
     }
@@ -85,20 +81,20 @@ class SetCommand: Command {
     private fun isValidInRow(
         row: Int,
         value: Int,
-        board: Board
+        board: BoardData
     ) = board.values[row].none { it == value }
 
     private fun isValidInColumn(
         col: Int,
         value: Int,
-        board: Board
+        board: BoardData
     ) = board.values.none { it[col] == value }
 
     private fun isValidInBox(
         row: Int,
         col: Int,
         value: Int,
-        board: Board
+        board: BoardData
     ): Boolean {
         val boxStartRow = row / 3 * 3
         val boxStartCol = col / 3 * 3
@@ -113,9 +109,11 @@ class SetCommand: Command {
 
         return true
     }
+
+    override fun getCommand() = "set"
 }
 
-data class Move(
+data class MoveData (
     val row: Int,
     val col: Int,
     val value: Int
