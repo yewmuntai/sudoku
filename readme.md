@@ -1,3 +1,5 @@
+This application runs on java 21. Though it's supposed to work on all os with jvm installed, it's only been tested on Mac.
+
 To build, run
 **./gradlew jar**
 
@@ -18,7 +20,7 @@ The Command classes are used to execute the commands. This makes it easy to add 
 
 To run tests and code coverage run   
 **./gradlew test**
-There is 1 integration test and some unit tests.
+There is 1 integration test and some unit tests. The tests are written in Groovy using SPOCK framework.
 
 To see a code coverage report, open **build/reports/jacoco/test/html/index.html** in a browser.
 The most recent report is added to this repository for convenience.
