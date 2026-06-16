@@ -2,6 +2,7 @@ package com.yewmun.sudoku.command
 
 import com.yewmun.sudoku.BoardData
 import com.yewmun.sudoku.CommandExecutor
+import com.yewmun.sudoku.MoveData
 import com.yewmun.sudoku.ROW_LABELS
 
 open class SetCommandExecutor: CommandExecutor {
@@ -9,24 +10,24 @@ open class SetCommandExecutor: CommandExecutor {
         parts: List<String>,
         board: BoardData
     ): String? {
-        val move = parseMove(parts) ?: return null
+        val setData = parseMove(parts) ?: return null
 
-        val previousValue = board.values[move.row][move.col]
-        board.values[move.row][move.col] = 0
+        val previousValue = board.values[setData.row][setData.col]
+        board.values[setData.row][setData.col] = 0
         val isValid = when {
-            !isValidMove(move.row, move.col, board) -> {
+            !isValidMove(setData.row, setData.col, board) -> {
                 println("Invalid move. That cell is a fixed value.")
                 false
             }
-            !isValidInRow(move.row, move.value, board) -> {
+            !isValidInRow(setData.row, setData.value, board) -> {
                 println("Invalid move. That value already exists in the row.")
                 false
             }
-            !isValidInColumn(move.col, move.value, board) -> {
+            !isValidInColumn(setData.col, setData.value, board) -> {
                 println("Invalid move. That value already exists in the column.")
                 false
             }
-            !isValidInBox(move.row, move.col, move.value, board) -> {
+            !isValidInBox(setData.row, setData.col, setData.value, board) -> {
                 println("Invalid move. That value already exists in the 3x3 box.")
                 false
             }
@@ -35,15 +36,16 @@ open class SetCommandExecutor: CommandExecutor {
             }
         }
         if (!isValid) {
-            board.values[move.row][move.col] = previousValue
+            board.values[setData.row][setData.col] = previousValue
             return null
         }
 
-        board.values[move.row][move.col] = move.value
+        board.values[setData.row][setData.col] = setData.value
+        board.moveHistory.add(MoveData(setData.row, setData.col, previousValue))
         return "Move accepted."
     }
 
-    private fun parseMove(parts: List<String>): MoveData? {
+    private fun parseMove(parts: List<String>): SetData? {
         if (parts.size != 4) {
             println("Invalid command. Usage: set row col value")
             return null
@@ -63,7 +65,7 @@ open class SetCommandExecutor: CommandExecutor {
             return null
         }
 
-        return MoveData(
+        return SetData(
             row = ROW_LABELS.indexOf(row),
             col = col - 1,
             value = value
@@ -75,7 +77,7 @@ open class SetCommandExecutor: CommandExecutor {
         col: Int,
         board: BoardData
     ): Boolean {
-        return !board.fixedValues[row][col]
+        return board.isAnswerCell(row, col)
     }
 
     private fun isValidInRow(
@@ -113,8 +115,10 @@ open class SetCommandExecutor: CommandExecutor {
     override fun getCommand() = "set"
 }
 
-data class MoveData (
+
+data class SetData (
     val row: Int,
     val col: Int,
     val value: Int
 )
+

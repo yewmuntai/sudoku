@@ -7,18 +7,16 @@ class SudokuController(
     private val size: Int = 9,
     private val commandControl: CommandControl = CommandControl()
 ) {
-
     fun generate(cellsToRemove: Int): BoardData {
         val values = Array(size) { IntArray(size) { 0 } }
-        val fixed = Array(size) { BooleanArray(size) { true } }
         val answers = mutableMapOf<Pair<Int, Int>, Int>()
         val sqrtSize = sqrt(size.toDouble()).toInt()
 
         fillDiagonal(sqrtSize, values)
         fillRemaining(0, sqrtSize, sqrtSize, values)
-        removeKDigits(cellsToRemove, values, fixed, answers)
+        removeKDigits(cellsToRemove, values, answers)
 
-        return BoardData(values, fixed, answers)
+        return BoardData(values, answers)
     }
 
     fun draw(board: BoardData) {
@@ -33,19 +31,19 @@ class SudokuController(
                 val value = board.values[row][col].let {
                     if (it == 0) "." else it
                 }
-                val displayValue = if (board.fixedValues[row][col]) {
-                    if (isGreen) {
-                        isGreen = false
-                        "$RESET_TEXT$value"
-                    } else {
-                        value.toString()
-                    }
-                } else {
+                val displayValue = if (board.isAnswerCell(row, col)) {
                     if (isGreen) {
                         value.toString()
                     } else {
                         isGreen = true
                         "$GREEN_TEXT$value"
+                    }
+                } else {
+                    if (isGreen) {
+                        isGreen = false
+                        "$RESET_TEXT$value"
+                    } else {
+                        value.toString()
                     }
                 }
                 print("$displayValue ")
@@ -146,7 +144,7 @@ class SudokuController(
         return false
     }
 
-    private fun removeKDigits(k: Int, values: Array<IntArray>, fixed: Array<BooleanArray>, answers: MutableMap<Pair<Int, Int>, Int>) {
+    private fun removeKDigits(k: Int, values: Array<IntArray>, answers: MutableMap<Pair<Int, Int>, Int>) {
         var count = k
         while (count != 0) {
             val cellId = Random.nextInt(0, size * size)
@@ -155,7 +153,6 @@ class SudokuController(
             if (values[i][j] != 0) {
                 answers[Pair(i, j)] = values[i][j]
                 values[i][j] = 0
-                fixed[i][j] = false
                 count--
             }
         }
@@ -179,10 +176,6 @@ class SudokuController(
                 intArrayOf(0, 0, 0, 0, 8, 0, 0, 7, 9)
             )
 
-            val fixedValues = Array(9) { row ->
-                BooleanArray(9) { col -> puzzle[row][col] != 0 }
-            }
-
             val answers = mapOf(
                 Pair(0, 2) to 4,Pair(0, 3) to 6,Pair(0, 5) to 8,Pair(0, 6) to 9,Pair(0, 7) to 1,Pair(0, 8) to 2,
                 Pair(1, 1) to 7,Pair(1, 2) to 2,Pair(1, 6) to 3,Pair(1, 7) to 4,Pair(1, 8) to 8,
@@ -194,7 +187,7 @@ class SudokuController(
                 Pair(7, 0) to 2,Pair(7, 1) to 8,Pair(7, 2) to 7,Pair(7, 6) to 6,Pair(7, 7) to 3,
                 Pair(8, 0) to 3,Pair(8, 1) to 4,Pair(8, 2) to 5,Pair(8, 3) to 2,Pair(8, 5) to 6,Pair(8, 6) to 1
             )
-            return BoardData(puzzle, fixedValues, answers)
+            return BoardData(puzzle, answers)
         }
     }
 }

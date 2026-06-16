@@ -6,7 +6,7 @@ To build, run
 the build jar is also in this repo for convenience.
 
 To run built app, run  
-**java -jar build/libs/kotlin-sudoku-cli-1.0-SNAPSHOT.jar**
+**java -jar build/libs/kotlin-sudoku-cli-1.0.jar**
 
 you can have a optional parameter to specify the difficulty of the puzzle. It is the number of cells to remove from the board. If there are no parameters, the default is 20.
 

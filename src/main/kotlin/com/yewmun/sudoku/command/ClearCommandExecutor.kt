@@ -2,6 +2,7 @@ package com.yewmun.sudoku.command
 
 import com.yewmun.sudoku.BoardData
 import com.yewmun.sudoku.CommandExecutor
+import com.yewmun.sudoku.MoveData
 import com.yewmun.sudoku.ROW_LABELS
 
 open class ClearCommandExecutor: CommandExecutor {
@@ -14,11 +15,12 @@ open class ClearCommandExecutor: CommandExecutor {
         val rowIndex = clear.row
         val colIndex = clear.col
 
-        if (board.fixedValues[rowIndex][colIndex]) {
+        if (!board.isAnswerCell(rowIndex, colIndex)) {
             println("You cannot clear a fixed puzzle cell.")
             return null
         }
 
+        board.moveHistory.add(MoveData(rowIndex, colIndex, board.values[rowIndex][colIndex]))
         board.values[rowIndex][colIndex] = 0
         return "Cell ${parts[1]} ${parts[2]} cleared."
     }

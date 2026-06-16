@@ -25,10 +25,11 @@ fun main(args: Array<String>) {
 
     println("Welcome to Kotlin Sudoku!")
     println("Commands:")
-    println("  set row col value  - Example: set A 3 9")
-    println("  clear row col      - Example: clear A 3")
-    println("  hint               - Example: hint")
-    println("  check              - Example: check")
+    println("  set row col value  - Make a move. Example: set A 3 9")
+    println("  clear row col      - Clear a move. Example: clear A 3")
+    println("  hint               - Get a hint. Example: hint")
+    println("  check              - Check validity of moves. Example: check")
+    println("  undo               - Undo last move. Example: undo")
     println("  quit               - Exit the game")
     println()
 

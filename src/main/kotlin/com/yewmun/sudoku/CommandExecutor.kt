@@ -5,6 +5,7 @@ import com.yewmun.sudoku.command.ClearCommandExecutor
 import com.yewmun.sudoku.command.HintCommandExecutor
 import com.yewmun.sudoku.command.QuitCommandExecutor
 import com.yewmun.sudoku.command.SetCommandExecutor
+import com.yewmun.sudoku.command.UndoCommandExecutor
 
 interface CommandExecutor {
     fun execute(parts: List<String>, board: BoardData): String?
@@ -19,6 +20,7 @@ open class CommandControl {
         add(CheckCommandExecutor())
         add(HintCommandExecutor())
         add(QuitCommandExecutor())
+        add(UndoCommandExecutor())
     }
 
     private fun add(command: CommandExecutor) {
